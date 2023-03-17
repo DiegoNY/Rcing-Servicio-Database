@@ -13,6 +13,18 @@ const config = {
             credito: '../../SERVICIO_DBF/DBF_DIEGO/documentos/detcredito.dbf',
             rta_s: './app/mock/sunat_answer.dbf',
         },
+        {
+            cabecera: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/cabecera.dbf',
+            detalle: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/DETALLE.dbf',
+            credito: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/detcredito.dbf',
+            rta_s: './app/mock/sunat_answer2.dbf',
+        },
+        {
+            cabecera: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/cabecera.dbf',
+            detalle: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/DETALLE.dbf',
+            credito: 'C:/Users/Desarrollo05/Desktop/SERVICIO_DBF/documentos2/detcredito.dbf',
+            rta_s: './app/mock/sunat_answer3.dbf',
+        },
     ]
 };
 exports.config = config;

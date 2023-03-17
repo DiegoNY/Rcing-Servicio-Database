@@ -36,7 +36,7 @@ app.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () 
     var _a, e_1, _b, _c;
     try {
         const DOCUMENTOS_MOCK = [];
-        const DOCS = yield dbffile_1.DBFFile.open(__filename + '/../mock/sunat_answer.dbf');
+        const DOCS = yield dbffile_1.DBFFile.open(__dirname + '/../mock/sunat_answer.dbf');
         try {
             for (var _d = true, DOCS_1 = __asyncValues(DOCS), DOCS_1_1; DOCS_1_1 = yield DOCS_1.next(), _a = DOCS_1_1.done, !_a;) {
                 _c = DOCS_1_1.value;
