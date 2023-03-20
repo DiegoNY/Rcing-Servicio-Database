@@ -5,6 +5,8 @@ import { config } from "./config/config";
 
 const procesos: any = config.procesos;
 
+let DOCS: any = [];
+
 procesos.map((procesos: any, index: string) => {
     setInterval(() => {
 
@@ -15,6 +17,12 @@ procesos.map((procesos: any, index: string) => {
         let CABECERAS_MOCK: any = [];
         let DOCUMENTOS_DECLARADOS: any = []
 
+        function GenerarCodigoVenta(serie: string | any, correlativo: string | any) {
+            let correlativoArr = correlativo.split('-');
+            const correlativoStr = correlativoArr[1].padStart(8, '0');
+
+            return { codigo: `${serie}-${correlativoStr}`, correlativo: correlativoStr, serie: serie };
+        }
 
         async function LEYENDO_ARCHIVOS_DBF(cabecera: string, items: string, cuotas: string, rta: string) {
 
@@ -67,9 +75,35 @@ procesos.map((procesos: any, index: string) => {
                             cuotas.push(cuota);
                         }
                     })
-                    DOCUMENTOS_MOCK.push({ ...cabecera, ITEMS: productos, CUOTAS: cuotas, RUC: '23023031' });
+                    const { correlativo, codigo, serie } = GenerarCodigoVenta(cabecera.SERIE, cabecera.CORRELATIV);
+                    DOCUMENTOS_MOCK.push({
+                        ...cabecera, cliente: cabecera.CLIENTE,
+                        NroDocCliente: cabecera.DOCUMENTO,
+                        TipoDocCliente: cabecera.TIPOIDCLI,
+                        DirCliente: cabecera.DIRECCION,
+                        TipoDoc: cabecera.TIPODCTO,
+                        CodVenta: codigo,
+                        Serie: serie,
+                        Correlativo: correlativo,
+                        FechaEmision: new Date(`${cabecera.FECEMISION}`).toISOString().substring(0, 10),
+                        HoraEmision: "00:00:00",
+                        FechaVencimiento: new Date(`${cabecera.FECEMISION}`).toISOString().substring(0, 10),
+                        items: productos,
+                        cuotas: cuotas,
+                        Moneda: "SOLES",
+                        FormaPago: cabecera.TIPOPAGO,
+                        Base: cabecera.SUBTOTAL,
+                        Igv: cabecera.IGV,
+                        MontoExcento: 0,
+                        MontoGratuito: 0,
+                        Descuento: 0,
+                        TotalDocumento: cabecera.TOTAL,
+                        Porcentaje: 0,
+                        NGuia:0,
+                        ruc: '230230323',
+                        idSucursal: '1'
+                    });
                 }
-                CABECERAS_MOCK.push(cabecera);
             };
 
             return { declare: true }
@@ -151,6 +185,7 @@ procesos.map((procesos: any, index: string) => {
                 console.log("HUBO UN ERROR", error)
             });
 
+        DOCS = DOCUMENTOS_MOCK
     }, 5000)
 })
 
@@ -158,5 +193,6 @@ procesos.map((procesos: any, index: string) => {
 /**PROBANDO MOCK */
 
 app.listen(3005, () => {
+    app.get('/docs', (req, res) => res.send(DOCS))
     console.log('Server escuchando en http://localhost:3005')
 })
