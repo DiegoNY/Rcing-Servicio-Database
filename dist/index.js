@@ -21,13 +21,19 @@ const dbffile_1 = require("dbffile");
 const apu_service_1 = require("./services/apu.service");
 const config_1 = require("./config/config");
 const procesos = config_1.config.procesos;
-procesos.map((procesos, index) => {
+let DOCS = [];
+procesos.map((proceso, index) => {
     setInterval(() => {
         let DOCUMENTOS_MOCK = [];
         let PRODUCTOS_MOCK = [];
         let CUOTAS_MOCK = [];
         let CABECERAS_MOCK = [];
         let DOCUMENTOS_DECLARADOS = [];
+        function GenerarCodigoVenta(serie, correlativo) {
+            let correlativoArr = correlativo.split('-');
+            const correlativoStr = correlativoArr[1].padStart(8, '0');
+            return { codigo: `${serie}-${correlativoStr}`, correlativo: correlativoStr, serie: serie };
+        }
         function LEYENDO_ARCHIVOS_DBF(cabecera, items, cuotas, rta) {
             var _a, e_1, _b, _c, _d, e_2, _e, _f, _g, e_3, _h, _j, _k, e_4, _l, _m;
             return __awaiter(this, void 0, void 0, function* () {
@@ -120,17 +126,77 @@ procesos.map((procesos, index) => {
                             if (cabecera.STATUS != 1) {
                                 PRODUCTOS_MOCK.map((produto) => {
                                     if (produto.CORRELATIV == cabecera.CORRELATIV) {
-                                        productos.push(produto);
+                                        productos.push({
+                                            CodigoItem: produto.CODPRODUCT,
+                                            Descripcion: produto.PRODUCTO,
+                                            Unidad: produto.UNIDADMEDI,
+                                            Cantidad: produto.CANTIDA,
+                                            Precio: produto.PRECIOUNIT,
+                                            SubTotal: produto.PRECIOBASE,
+                                            Igv: produto.MONTOIGV,
+                                            Descuento: produto.DSCTOPRECI || 0,
+                                            Total: produto.IMPORTE,
+                                            Lote: produto.LOTE || null,
+                                            FechaVcto: new Date(`${produto.FECHAVCTO}`).toISOString().substring(0, 10),
+                                            Labora: produto.LABORA,
+                                            Pastilla: produto.PASTILLA,
+                                            Palote: produto.PALOTE
+                                        });
                                     }
                                 });
                                 CUOTAS_MOCK.map((cuota) => {
                                     if (cuota.CORRELATIV == cabecera.CORRELATIV) {
-                                        cuotas.push(cuota);
+                                        cuotas.push({
+                                            NroCuota: cuota.NRO_CUOTA,
+                                            FechaCuota: new Date(`${cuota.FECH_CUOTA}`).toISOString().substring(0, 10),
+                                            MontoCuota: cuota.MONT_CUOTA
+                                        });
                                     }
                                 });
-                                DOCUMENTOS_MOCK.push(Object.assign(Object.assign({}, cabecera), { ITEMS: productos, CUOTAS: cuotas, RUC: '23023031' }));
+                                const { correlativo, codigo, serie } = GenerarCodigoVenta(cabecera.SERIE, cabecera.CORRELATIV);
+                                DOCUMENTOS_MOCK.push({
+                                    CORRELATIV: codigo,
+                                    cliente: cabecera.CLIENTE,
+                                    NroDocCliente: cabecera.DOCUMENTO,
+                                    TipoDocCliente: cabecera.TIPOIDCLI,
+                                    DirCliente: cabecera.DIRECCION,
+                                    TipoDoc: cabecera.TIPODCTO,
+                                    CodVenta: codigo,
+                                    Serie: serie,
+                                    Correlativo: correlativo,
+                                    FechaEmision: new Date(`${cabecera.FECEMISION}`).toISOString().substring(0, 10),
+                                    HoraEmision: "00:00:00",
+                                    FechaVencimiento: new Date(`${cabecera.FECEMISION}`).toISOString().substring(0, 10),
+                                    items: productos,
+                                    cuotas: cuotas,
+                                    Moneda: "SOLES",
+                                    FormaPago: cabecera.TIPOPAGO,
+                                    Base: cabecera.SUBTOTAL,
+                                    Igv: cabecera.IGV,
+                                    MontoExcento: 0,
+                                    MontoGratuito: 0,
+                                    Descuento: 0,
+                                    TotalDocumento: cabecera.TOTAL,
+                                    Porcentaje: 0,
+                                    NGuia: 0,
+                                    TipoCambio: 0,
+                                    FechaReferencia: null,
+                                    TipoReferencia: null,
+                                    DocumentoReferencia: null,
+                                    CodMotivo: null,
+                                    Motivo: null,
+                                    otros: "",
+                                    Detraccion: 0,
+                                    PorcDetraccion: 0,
+                                    MontoDetraccion: 0,
+                                    RegimenPercepcion: 0,
+                                    TasaPercepcion: 0,
+                                    MontoPercepcion: 0,
+                                    ruc: config_1.config.ruc,
+                                    idSucursal: config_1.config.idSucursal,
+                                    Estado: 1,
+                                });
                             }
-                            CABECERAS_MOCK.push(cabecera);
                         }
                         finally {
                             _r = true;
@@ -156,12 +222,11 @@ procesos.map((procesos, index) => {
                 .catch((error) => console.error(error));
             DOCUMENTOS_MOCK.map((docLeidos) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CORRELATIV && docDeclarado.ESTATUS === '1';
+                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1';
                 });
                 if (declarado) {
-                    return; //console.log("DECLARADO");
+                    return;
                 }
-                //console.log('DECLARAR');
                 DOCUMENTOS_DECLARAR.push(docLeidos);
             });
             if (DOCUMENTOS_DECLARAR.length != 0) {
@@ -169,7 +234,6 @@ procesos.map((procesos, index) => {
                 service.getRta()
                     .then((rta) => {
                     const { data } = rta;
-                    // console.log(data);
                     console.table(data);
                     data.map((docsRta) => {
                         RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.status}` });
@@ -191,19 +255,21 @@ procesos.map((procesos, index) => {
         });
         console.count("EJECUTANDO PROCESO");
         console.time('DEMORA AL EJECUTAR EL PROCESO ' + index);
-        LEYENDO_ARCHIVOS_DBF(procesos.cabecera, procesos.detalle, procesos.credito, procesos.rta_s)
+        LEYENDO_ARCHIVOS_DBF(proceso.cabecera, proceso.detalle, proceso.credito, proceso.rta_s)
             .then((rta) => {
             if (rta.declare == true) {
-                DECLARANDO(`${procesos.rta_s}`);
+                DECLARANDO(`${proceso.rta_s}`);
                 console.timeEnd('DEMORA AL EJECUTAR EL PROCESO ' + index);
             }
         })
             .catch(error => {
             console.log("HUBO UN ERROR", error);
         });
+        DOCS = DOCUMENTOS_MOCK;
     }, 5000);
 });
 /**PROBANDO MOCK */
 server_1.app.listen(3005, () => {
+    server_1.app.get('/docs', (req, res) => res.send(DOCS));
     console.log('Server escuchando en http://localhost:3005');
 });

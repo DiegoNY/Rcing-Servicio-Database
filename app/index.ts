@@ -7,7 +7,7 @@ const procesos: any = config.procesos;
 
 let DOCS: any = [];
 
-procesos.map((procesos: any, index: string) => {
+procesos.map((proceso: any, index: string) => {
     setInterval(() => {
 
 
@@ -67,17 +67,37 @@ procesos.map((procesos: any, index: string) => {
 
                     PRODUCTOS_MOCK.map((produto: any) => {
                         if (produto.CORRELATIV == cabecera.CORRELATIV) {
-                            productos.push(produto);
+                            productos.push({
+                                CodigoItem: produto.CODPRODUCT,
+                                Descripcion: produto.PRODUCTO,
+                                Unidad: produto.UNIDADMEDI,
+                                Cantidad: produto.CANTIDA,
+                                Precio: produto.PRECIOUNIT,
+                                SubTotal: produto.PRECIOBASE,
+                                Igv: produto.MONTOIGV,
+                                Descuento: produto.DSCTOPRECI || 0,
+                                Total: produto.IMPORTE,
+                                Lote: produto.LOTE || null,
+                                FechaVcto: new Date(`${produto.FECHAVCTO}`).toISOString().substring(0, 10),
+                                Labora: produto.LABORA,
+                                Pastilla: produto.PASTILLA,
+                                Palote: produto.PALOTE
+                            });
                         }
                     })
                     CUOTAS_MOCK.map((cuota: any) => {
                         if (cuota.CORRELATIV == cabecera.CORRELATIV) {
-                            cuotas.push(cuota);
+                            cuotas.push({
+                                NroCuota: cuota.NRO_CUOTA,
+                                FechaCuota: new Date(`${cuota.FECH_CUOTA}`).toISOString().substring(0, 10),
+                                MontoCuota: cuota.MONT_CUOTA
+                            });
                         }
                     })
                     const { correlativo, codigo, serie } = GenerarCodigoVenta(cabecera.SERIE, cabecera.CORRELATIV);
                     DOCUMENTOS_MOCK.push({
-                        ...cabecera, cliente: cabecera.CLIENTE,
+                        CORRELATIV: codigo,
+                        cliente: cabecera.CLIENTE,
                         NroDocCliente: cabecera.DOCUMENTO,
                         TipoDocCliente: cabecera.TIPOIDCLI,
                         DirCliente: cabecera.DIRECCION,
@@ -99,9 +119,23 @@ procesos.map((procesos: any, index: string) => {
                         Descuento: 0,
                         TotalDocumento: cabecera.TOTAL,
                         Porcentaje: 0,
-                        NGuia:0,
-                        ruc: '230230323',
-                        idSucursal: '1'
+                        NGuia: 0,
+                        TipoCambio: 0,
+                        FechaReferencia: null,
+                        TipoReferencia: null,
+                        DocumentoReferencia: null,
+                        CodMotivo: null,
+                        Motivo: null,
+                        otros: "",
+                        Detraccion: 0,
+                        PorcDetraccion: 0,
+                        MontoDetraccion: 0,
+                        RegimenPercepcion: 0,
+                        TasaPercepcion: 0,
+                        MontoPercepcion: 0,
+                        ruc: config.ruc,
+                        idSucursal: config.idSucursal,
+                        Estado: 1,
                     });
                 }
             };
@@ -122,24 +156,23 @@ procesos.map((procesos: any, index: string) => {
 
             DOCUMENTOS_MOCK.map((docLeidos: any) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado: any) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CORRELATIV && docDeclarado.ESTATUS === '1';
+                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1';
                 })
 
                 if (declarado) {
-                    return //console.log("DECLARADO");
+                    return
                 }
-                //console.log('DECLARAR');
+
                 DOCUMENTOS_DECLARAR.push(docLeidos);
             });
 
             if (DOCUMENTOS_DECLARAR.length != 0) {
                 const service = new Apu(DOCUMENTOS_DECLARAR);
-
                 service.getRta()
                     .then((rta: any) => {
 
                         const { data } = rta;
-                        // console.log(data);
+
                         console.table(data);
                         data.map((docsRta: any) => {
                             RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.status}` })
@@ -170,14 +203,14 @@ procesos.map((procesos: any, index: string) => {
         console.count("EJECUTANDO PROCESO");
         console.time('DEMORA AL EJECUTAR EL PROCESO ' + index)
         LEYENDO_ARCHIVOS_DBF(
-            procesos.cabecera,
-            procesos.detalle,
-            procesos.credito,
-            procesos.rta_s
+            proceso.cabecera,
+            proceso.detalle,
+            proceso.credito,
+            proceso.rta_s
         )
             .then((rta: any) => {
                 if (rta.declare == true) {
-                    DECLARANDO(`${procesos.rta_s}`);
+                    DECLARANDO(`${proceso.rta_s}`);
                     console.timeEnd('DEMORA AL EJECUTAR EL PROCESO ' + index)
                 }
             })

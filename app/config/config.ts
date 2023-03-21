@@ -4,6 +4,8 @@ const config = {
     env: process.env.NODE_ENV || 'dev',
     port: process.env.PORT || 3000,
     url: process.env.SERVICE || '',
+    ruc: "123456789123",
+    idSucursal: 1,
     procesos: process.env.PROCESOS || [
         {
             cabecera: '../../SERVICIO_DBF/DBF_DIEGO/documentos/cabecera.dbf',
