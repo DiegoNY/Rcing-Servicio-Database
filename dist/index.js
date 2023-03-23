@@ -253,7 +253,7 @@ procesos.map((proceso, index) => {
             let descrip = descripcion;
             yield dbffile_1.DBFFile.create(rta, descrip);
         });
-        console.count("EJECUTANDO PROCESO");
+        console.count(`EJECUTANDO PROCESO FECHA : ${new Date().toISOString()} NUMERO : `);
         console.time('DEMORA AL EJECUTAR EL PROCESO ' + index);
         LEYENDO_ARCHIVOS_DBF(proceso.cabecera, proceso.detalle, proceso.credito, proceso.rta_s)
             .then((rta) => {
@@ -266,7 +266,7 @@ procesos.map((proceso, index) => {
             console.log("HUBO UN ERROR", error);
         });
         DOCS = DOCUMENTOS_MOCK;
-    }, 5000);
+    }, 30000);
 });
 /**PROBANDO MOCK */
 server_1.app.listen(3005, () => {

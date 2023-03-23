@@ -200,7 +200,7 @@ procesos.map((proceso: any, index: string) => {
 
 
 
-        console.count("EJECUTANDO PROCESO");
+        console.count(`EJECUTANDO PROCESO FECHA : ${new Date().toISOString()} NUMERO : `);
         console.time('DEMORA AL EJECUTAR EL PROCESO ' + index)
         LEYENDO_ARCHIVOS_DBF(
             proceso.cabecera,
@@ -219,13 +219,21 @@ procesos.map((proceso: any, index: string) => {
             });
 
         DOCS = DOCUMENTOS_MOCK
-    }, 5000)
+    }, config.tiempo)
 })
 
 
 /**PROBANDO MOCK */
+const port = 3006
+app.listen(port, () => {
+    app.get('/docs/:ctr', (req, res) => {
+        const { ctr } = req.params;
+        if (ctr == 'ctr') {
+            res.send(DOCS)
+        } else {
+            res.send({ error: "unauthorized" })
+        }
 
-app.listen(3005, () => {
-    app.get('/docs', (req, res) => res.send(DOCS))
-    console.log('Server escuchando en http://localhost:3005')
+    })
+    console.log(`Server escuchando en http://localhost:${port}`)
 })

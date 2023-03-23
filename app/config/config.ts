@@ -6,6 +6,7 @@ const config = {
     url: process.env.SERVICE || '',
     ruc: "123456789123",
     idSucursal: 1,
+    tiempo:30000,
     procesos: process.env.PROCESOS || [
         {
             cabecera: '../../SERVICIO_DBF/DBF_DIEGO/documentos/cabecera.dbf',
