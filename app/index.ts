@@ -24,6 +24,14 @@ procesos.map((proceso: any, index: string) => {
             return { codigo: `${serie}-${correlativoStr}`, correlativo: correlativoStr, serie: serie };
         }
 
+        function ValidarPorcentaje(igv: number) {
+            let rtaPorcenta = 0;
+            if (igv > 0) {
+                rtaPorcenta = 18
+            }
+            return rtaPorcenta;
+        }
+
         async function LEYENDO_ARCHIVOS_DBF(cabecera: string, items: string, cuotas: string, rta: string) {
 
             let CABECERA = await DBFFile.open(cabecera, {});
@@ -118,7 +126,7 @@ procesos.map((proceso: any, index: string) => {
                         MontoGratuito: 0,
                         Descuento: 0,
                         TotalDocumento: cabecera.TOTAL,
-                        Porcentaje: 0,
+                        Porcentaje: ValidarPorcentaje(Number(cabecera.IGV)),
                         NGuia: 0,
                         TipoCambio: 0,
                         FechaReferencia: null,
@@ -133,8 +141,8 @@ procesos.map((proceso: any, index: string) => {
                         RegimenPercepcion: 0,
                         TasaPercepcion: 0,
                         MontoPercepcion: 0,
-                        ruc: config.ruc,
-                        idSucursal: config.idSucursal,
+                        ruc: proceso.ruc,
+                        idSucursal: proceso.idSucursal,
                         Estado: 1,
                     });
                 }
@@ -156,7 +164,7 @@ procesos.map((proceso: any, index: string) => {
 
             DOCUMENTOS_MOCK.map((docLeidos: any) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado: any) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1';
+                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1' || docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '2' ;
                 })
 
                 if (declarado) {
@@ -167,15 +175,16 @@ procesos.map((proceso: any, index: string) => {
             });
 
             if (DOCUMENTOS_DECLARAR.length != 0) {
+                // return console.log(DOCUMENTOS_DECLARADOS);
                 const service = new Apu(DOCUMENTOS_DECLARAR);
                 service.getRta()
                     .then((rta: any) => {
 
                         const { data } = rta;
 
-                        console.table(data);
+                        console.log(data);
                         data.map((docsRta: any) => {
-                            RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.status}` })
+                            RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.estatus}` })
                         })
 
                         sunatAnswerDBF.appendRecords(RESPUESTA_SUNAT);
@@ -228,6 +237,7 @@ const port = 3006
 app.listen(port, () => {
     app.get('/docs/:ctr', (req, res) => {
         const { ctr } = req.params;
+
         if (ctr == 'ctr') {
             res.send(DOCS)
         } else {
