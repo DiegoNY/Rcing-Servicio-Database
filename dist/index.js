@@ -34,6 +34,13 @@ procesos.map((proceso, index) => {
             const correlativoStr = correlativoArr[1].padStart(8, '0');
             return { codigo: `${serie}-${correlativoStr}`, correlativo: correlativoStr, serie: serie };
         }
+        function ValidarPorcentaje(igv) {
+            let rtaPorcenta = 0;
+            if (igv > 0) {
+                rtaPorcenta = 18;
+            }
+            return rtaPorcenta;
+        }
         function LEYENDO_ARCHIVOS_DBF(cabecera, items, cuotas, rta) {
             var _a, e_1, _b, _c, _d, e_2, _e, _f, _g, e_3, _h, _j, _k, e_4, _l, _m;
             return __awaiter(this, void 0, void 0, function* () {
@@ -92,7 +99,9 @@ procesos.map((proceso, index) => {
                     CREAR_DBF([
                         { name: 'DOCUMENTO', type: 'C', size: 255 },
                         { name: 'MENSAJE', type: 'C', size: 255 },
-                        { name: 'ESTATUS', type: 'C', size: 255 }
+                        { name: 'ESTATUS', type: 'C', size: 255 },
+                        { name: 'RUC', type: 'C', size: 255 },
+                        { name: 'SUCURSAL', type: 'C', size: 255 },
                     ], rta);
                 });
                 try {
@@ -177,7 +186,7 @@ procesos.map((proceso, index) => {
                                     MontoGratuito: 0,
                                     Descuento: 0,
                                     TotalDocumento: cabecera.TOTAL,
-                                    Porcentaje: 0,
+                                    Porcentaje: ValidarPorcentaje(Number(cabecera.IGV)),
                                     NGuia: 0,
                                     TipoCambio: 0,
                                     FechaReferencia: null,
@@ -192,8 +201,8 @@ procesos.map((proceso, index) => {
                                     RegimenPercepcion: 0,
                                     TasaPercepcion: 0,
                                     MontoPercepcion: 0,
-                                    ruc: config_1.config.ruc,
-                                    idSucursal: config_1.config.idSucursal,
+                                    ruc: proceso.ruc,
+                                    idSucursal: proceso.idSucursal,
                                     Estado: 1,
                                 });
                             }
@@ -222,7 +231,7 @@ procesos.map((proceso, index) => {
                 .catch((error) => console.error(error));
             DOCUMENTOS_MOCK.map((docLeidos) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1';
+                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1' || docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '2';
                 });
                 if (declarado) {
                     return;
@@ -230,13 +239,20 @@ procesos.map((proceso, index) => {
                 DOCUMENTOS_DECLARAR.push(docLeidos);
             });
             if (DOCUMENTOS_DECLARAR.length != 0) {
+                // return console.log(DOCUMENTOS_DECLARAR);
                 const service = new apu_service_1.Apu(DOCUMENTOS_DECLARAR);
                 service.getRta()
                     .then((rta) => {
                     const { data } = rta;
+                    console.count(`EJECUTANDO PROCESO  NUMERO : `);
+                    console.log(`FECHA : ${new Date().toISOString()}`);
                     console.table(data);
                     data.map((docsRta) => {
-                        RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.status}` });
+                        RESPUESTA_SUNAT.push({
+                            DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                            ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                            SUCURSAL: `${proceso.idSucursal}`,
+                        });
                     });
                     sunatAnswerDBF.appendRecords(RESPUESTA_SUNAT);
                     DOCUMENTOS_MOCK = [];
@@ -245,7 +261,10 @@ procesos.map((proceso, index) => {
                     CABECERAS_MOCK = [];
                     DOCUMENTOS_DECLARADOS = [];
                 })
-                    .catch((error) => console.log(error));
+                    .catch((error) => {
+                    console.log(`FECHA : ${new Date().toISOString()}`);
+                    console.log("Hubo en error al declarar", error);
+                });
             }
         });
         /**CREAR EL ARCHIVO DE RECEPCION RESPUESTA */
@@ -253,23 +272,29 @@ procesos.map((proceso, index) => {
             let descrip = descripcion;
             yield dbffile_1.DBFFile.create(rta, descrip);
         });
-        console.count(`EJECUTANDO PROCESO FECHA : ${new Date().toISOString()} NUMERO : `);
-        console.time('DEMORA AL EJECUTAR EL PROCESO ' + index);
         LEYENDO_ARCHIVOS_DBF(proceso.cabecera, proceso.detalle, proceso.credito, proceso.rta_s)
             .then((rta) => {
             if (rta.declare == true) {
                 DECLARANDO(`${proceso.rta_s}`);
-                console.timeEnd('DEMORA AL EJECUTAR EL PROCESO ' + index);
             }
         })
             .catch(error => {
-            console.log("HUBO UN ERROR", error);
+            console.log("HUBO UN ERROR EN LA LECTURA", error);
         });
         DOCS = DOCUMENTOS_MOCK;
-    }, 30000);
+    }, config_1.config.tiempo);
 });
 /**PROBANDO MOCK */
-server_1.app.listen(3005, () => {
-    server_1.app.get('/docs', (req, res) => res.send(DOCS));
-    console.log('Server escuchando en http://localhost:3005');
+const port = 3005;
+server_1.app.listen(port, () => {
+    server_1.app.get('/docs/:ctr', (req, res) => {
+        const { ctr } = req.params;
+        if (ctr == 'ctr') {
+            res.send(DOCS);
+        }
+        else {
+            res.send({ error: "unauthorized" });
+        }
+    });
+    console.log(`Server escuchando en http://localhost:${port}`);
 });

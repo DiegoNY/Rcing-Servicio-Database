@@ -4,7 +4,6 @@ const config = {
     env: process.env.NODE_ENV || 'dev',
     port: process.env.PORT || 3000,
     url: process.env.SERVICE || '',
-    ruc: "10704012964",
     idSucursal: 1,
     tiempo:5000,
     procesos: process.env.PROCESOS || [

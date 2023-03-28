@@ -56,7 +56,9 @@ procesos.map((proceso: any, index: string) => {
                         [
                             { name: 'DOCUMENTO', type: 'C', size: 255 },
                             { name: 'MENSAJE', type: 'C', size: 255 },
-                            { name: 'ESTATUS', type: 'C', size: 255 }
+                            { name: 'ESTATUS', type: 'C', size: 255 },
+                            { name: 'RUC', type: 'C', size: 255 },
+                            { name: 'SUCURSAL', type: 'C', size: 255 },
                         ],
                         rta
                     )
@@ -164,7 +166,7 @@ procesos.map((proceso: any, index: string) => {
 
             DOCUMENTOS_MOCK.map((docLeidos: any) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado: any) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1' || docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '2' ;
+                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1'  || docDeclarado.DOCUMENTO === docLeidos.CodVenta &&  docDeclarado.ESTATUS === '2';
                 })
 
                 if (declarado) {
@@ -175,16 +177,24 @@ procesos.map((proceso: any, index: string) => {
             });
 
             if (DOCUMENTOS_DECLARAR.length != 0) {
-                // return console.log(DOCUMENTOS_DECLARADOS);
+                // return console.log(DOCUMENTOS_DECLARAR);
                 const service = new Apu(DOCUMENTOS_DECLARAR);
                 service.getRta()
                     .then((rta: any) => {
 
                         const { data } = rta;
 
-                        console.log(data);
+                        console.count(`EJECUTANDO PROCESO  NUMERO : `);
+                        console.log(`FECHA : ${new Date().toISOString()}`);
+                        console.table(data);
                         data.map((docsRta: any) => {
-                            RESPUESTA_SUNAT.push({ DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message, ESTATUS: `${docsRta.estatus}` })
+
+                            RESPUESTA_SUNAT.push({
+                                DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                                ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                                SUCURSAL: `${proceso.idSucursal}`,
+                            })
+
                         })
 
                         sunatAnswerDBF.appendRecords(RESPUESTA_SUNAT);
@@ -196,7 +206,10 @@ procesos.map((proceso: any, index: string) => {
                         DOCUMENTOS_DECLARADOS = [];
 
                     })
-                    .catch((error: any) => console.log(error))
+                    .catch((error: any) => {
+                        console.log(`FECHA : ${new Date().toISOString()}`);
+                        console.log("Hubo en error al declarar", error)
+                    })
             }
 
         }
@@ -207,10 +220,6 @@ procesos.map((proceso: any, index: string) => {
             await DBFFile.create(rta, descrip);
         }
 
-
-
-        console.count(`EJECUTANDO PROCESO FECHA : ${new Date().toISOString()} NUMERO : `);
-        console.time('DEMORA AL EJECUTAR EL PROCESO ' + index)
         LEYENDO_ARCHIVOS_DBF(
             proceso.cabecera,
             proceso.detalle,
@@ -220,11 +229,10 @@ procesos.map((proceso: any, index: string) => {
             .then((rta: any) => {
                 if (rta.declare == true) {
                     DECLARANDO(`${proceso.rta_s}`);
-                    console.timeEnd('DEMORA AL EJECUTAR EL PROCESO ' + index)
                 }
             })
             .catch(error => {
-                console.log("HUBO UN ERROR", error)
+                console.log("HUBO UN ERROR EN LA LECTURA", error)
             });
 
         DOCS = DOCUMENTOS_MOCK
@@ -233,7 +241,7 @@ procesos.map((proceso: any, index: string) => {
 
 
 /**PROBANDO MOCK */
-const port = 3006
+const port = 3005
 app.listen(port, () => {
     app.get('/docs/:ctr', (req, res) => {
         const { ctr } = req.params;
