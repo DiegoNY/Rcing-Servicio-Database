@@ -5,7 +5,7 @@ const config = {
     port: process.env.PORT || 3000,
     url: process.env.SERVICE || '',
     idSucursal: 1,
-    tiempo:5000,
+    tiempo: 5000,
     procesos: process.env.PROCESOS || [
         {
             cabecera: '../../SERVICIO_DBF/DBF_DIEGO/documentos/cabecera.dbf',
@@ -31,7 +31,8 @@ const config = {
             ruc: "10704012964",
             idSucursal: 1,
         },
-    ]
+    ],
+    limpiar_errores: 30000,
 }
 
 

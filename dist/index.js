@@ -23,6 +23,7 @@ const config_1 = require("./config/config");
 const procesos = config_1.config.procesos;
 let DOCS = [];
 procesos.map((proceso, index) => {
+    let documentos_errores = [];
     setInterval(() => {
         let DOCUMENTOS_MOCK = [];
         let PRODUCTOS_MOCK = [];
@@ -45,8 +46,6 @@ procesos.map((proceso, index) => {
             var _a, e_1, _b, _c, _d, e_2, _e, _f, _g, e_3, _h, _j, _k, e_4, _l, _m;
             return __awaiter(this, void 0, void 0, function* () {
                 let CABECERA = yield dbffile_1.DBFFile.open(cabecera, {});
-                // console.log(`DBF file contains ${CABECERA.recordCount} records.`);
-                // console.log(`Field names: ${CABECERA.fields.map(f => f.name).join(', ')}`);
                 let ITEMS = yield dbffile_1.DBFFile.open(items);
                 try {
                     for (var _o = true, ITEMS_1 = __asyncValues(ITEMS), ITEMS_1_1; ITEMS_1_1 = yield ITEMS_1.next(), _a = ITEMS_1_1.done, !_a;) {
@@ -203,6 +202,7 @@ procesos.map((proceso, index) => {
                                     MontoPercepcion: 0,
                                     ruc: proceso.ruc,
                                     idSucursal: proceso.idSucursal,
+                                    placa: null,
                                     Estado: 1,
                                 });
                             }
@@ -231,15 +231,21 @@ procesos.map((proceso, index) => {
                 .catch((error) => console.error(error));
             DOCUMENTOS_MOCK.map((docLeidos) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1' || docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '2';
+                    return docDeclarado.DOCUMENTO === `${docLeidos.CodVenta}-${docLeidos.TipoDoc}` && docDeclarado.ESTATUS === '1';
                 });
+                const contiene_errores = documentos_errores.find((documento) => {
+                    return documento.DOCUMENTO == `${docLeidos.CodVenta}-${docLeidos.TipoDoc}`;
+                });
+                if (contiene_errores) {
+                    return;
+                }
                 if (declarado) {
                     return;
                 }
                 DOCUMENTOS_DECLARAR.push(docLeidos);
             });
             if (DOCUMENTOS_DECLARAR.length != 0) {
-                // return console.log(DOCUMENTOS_DECLARAR);
+                // console.log(DOCUMENTOS_DECLARAR);
                 const service = new apu_service_1.Apu(DOCUMENTOS_DECLARAR);
                 service.getRta()
                     .then((rta) => {
@@ -248,11 +254,20 @@ procesos.map((proceso, index) => {
                     console.log(`FECHA : ${new Date().toISOString()}`);
                     console.table(data);
                     data.map((docsRta) => {
-                        RESPUESTA_SUNAT.push({
-                            DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
-                            ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
-                            SUCURSAL: `${proceso.idSucursal}`,
-                        });
+                        if (docsRta.estatus == 2) {
+                            documentos_errores.push({
+                                DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                                ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                                SUCURSAL: `${proceso.idSucursal}`,
+                            });
+                        }
+                        else {
+                            RESPUESTA_SUNAT.push({
+                                DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                                ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                                SUCURSAL: `${proceso.idSucursal}`,
+                            });
+                        }
                     });
                     sunatAnswerDBF.appendRecords(RESPUESTA_SUNAT);
                     DOCUMENTOS_MOCK = [];
@@ -283,9 +298,12 @@ procesos.map((proceso, index) => {
         });
         DOCS = DOCUMENTOS_MOCK;
     }, config_1.config.tiempo);
+    setInterval(() => {
+        documentos_errores = [];
+    }, config_1.config.limpiar_errores);
 });
 /**PROBANDO MOCK */
-const port = 3005;
+const port = 3015;
 server_1.app.listen(port, () => {
     server_1.app.get('/docs/:ctr', (req, res) => {
         const { ctr } = req.params;

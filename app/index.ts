@@ -7,7 +7,12 @@ const procesos: any = config.procesos;
 
 let DOCS: any = [];
 
+
+
+
 procesos.map((proceso: any, index: string) => {
+    let documentos_errores: any = [];
+
     setInterval(() => {
 
 
@@ -15,7 +20,7 @@ procesos.map((proceso: any, index: string) => {
         let PRODUCTOS_MOCK: any = [];
         let CUOTAS_MOCK: any = [];
         let CABECERAS_MOCK: any = [];
-        let DOCUMENTOS_DECLARADOS: any = []
+        let DOCUMENTOS_DECLARADOS: any = [];
 
         function GenerarCodigoVenta(serie: string | any, correlativo: string | any) {
             let correlativoArr = correlativo.split('-');
@@ -35,8 +40,6 @@ procesos.map((proceso: any, index: string) => {
         async function LEYENDO_ARCHIVOS_DBF(cabecera: string, items: string, cuotas: string, rta: string) {
 
             let CABECERA = await DBFFile.open(cabecera, {});
-            // console.log(`DBF file contains ${CABECERA.recordCount} records.`);
-            // console.log(`Field names: ${CABECERA.fields.map(f => f.name).join(', ')}`);
 
             let ITEMS = await DBFFile.open(items);
             for await (const item of ITEMS) {
@@ -145,6 +148,7 @@ procesos.map((proceso: any, index: string) => {
                         MontoPercepcion: 0,
                         ruc: proceso.ruc,
                         idSucursal: proceso.idSucursal,
+                        placa: null,
                         Estado: 1,
                     });
                 }
@@ -166,18 +170,25 @@ procesos.map((proceso: any, index: string) => {
 
             DOCUMENTOS_MOCK.map((docLeidos: any) => {
                 const declarado = DOCUMENTOS_DECLARADOS.find((docDeclarado: any) => {
-                    return docDeclarado.DOCUMENTO === docLeidos.CodVenta && docDeclarado.ESTATUS === '1'  || docDeclarado.DOCUMENTO === docLeidos.CodVenta &&  docDeclarado.ESTATUS === '2';
+                    return docDeclarado.DOCUMENTO === `${docLeidos.CodVenta}-${docLeidos.TipoDoc}` && docDeclarado.ESTATUS === '1';
                 })
 
+                const contiene_errores = documentos_errores.find((documento: any) => {
+                    return documento.DOCUMENTO == `${docLeidos.CodVenta}-${docLeidos.TipoDoc}`;
+                })
+
+                if (contiene_errores) {
+                    return
+                }
                 if (declarado) {
                     return
                 }
-
                 DOCUMENTOS_DECLARAR.push(docLeidos);
             });
 
+
             if (DOCUMENTOS_DECLARAR.length != 0) {
-                // return console.log(DOCUMENTOS_DECLARAR);
+                // console.log(DOCUMENTOS_DECLARAR);
                 const service = new Apu(DOCUMENTOS_DECLARAR);
                 service.getRta()
                     .then((rta: any) => {
@@ -189,12 +200,19 @@ procesos.map((proceso: any, index: string) => {
                         console.table(data);
                         data.map((docsRta: any) => {
 
-                            RESPUESTA_SUNAT.push({
-                                DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
-                                ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
-                                SUCURSAL: `${proceso.idSucursal}`,
-                            })
-
+                            if (docsRta.estatus == 2) {
+                                documentos_errores.push({
+                                    DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                                    ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                                    SUCURSAL: `${proceso.idSucursal}`,
+                                })
+                            } else {
+                                RESPUESTA_SUNAT.push({
+                                    DOCUMENTO: docsRta.documento, MENSAJE: docsRta.Message,
+                                    ESTATUS: `${docsRta.estatus}`, RUC: `${proceso.ruc}`,
+                                    SUCURSAL: `${proceso.idSucursal}`,
+                                })
+                            }
                         })
 
                         sunatAnswerDBF.appendRecords(RESPUESTA_SUNAT);
@@ -237,11 +255,15 @@ procesos.map((proceso: any, index: string) => {
 
         DOCS = DOCUMENTOS_MOCK
     }, config.tiempo)
+
+    setInterval(() => {
+        documentos_errores = [];
+    }, config.limpiar_errores)
 })
 
 
 /**PROBANDO MOCK */
-const port = 3005
+const port = 3015
 app.listen(port, () => {
     app.get('/docs/:ctr', (req, res) => {
         const { ctr } = req.params;

@@ -33,6 +33,7 @@ const config = {
             ruc: "10704012964",
             idSucursal: 1,
         },
-    ]
+    ],
+    limpiar_errores: 30000,
 };
 exports.config = config;
