@@ -1,6 +1,8 @@
 import axios from "axios";
 import { Documento } from "../types/serviceDoc";
+import { config } from "../config/config";
 
+const host: string = 'http://192.168.1.32:8282'
 class Apu {
 
     rta: any;
@@ -9,7 +11,7 @@ class Apu {
     }
     sendData(data: Documento[]) {
 
-        const rta = axios.post('http://192.168.1.32:8282/Portal/public/api/InsertDocumento', data)
+        const rta = axios.post(`${host}/Portal/public/api/InsertDocumento`, data)
             .then(response => {
                 return response;
             })
@@ -25,4 +27,18 @@ class Apu {
     }
 }
 
-export { Apu }
+const senStatus = () => {
+    const rta = axios.post(`${host}/Portal/public/api/servicioActivo`, {
+        idSucursal: config.idSucursal,
+        // empresa: config.ruc
+    })
+        .then(rta => {
+            return rta;
+        })
+        .catch(error => {
+            throw new Error(`Error al enviar estatus ${error}`)
+        })
+    return rta
+}
+
+export { Apu, senStatus }

@@ -5,6 +5,7 @@ import { ProcesarDocuemntos } from "./procesar_documentos/ProcesarDocumentos";
 import { Documento, RespuestaServicio, RespuestaSunat } from "./types/serviceDoc";
 import { Declarar } from "./Declarar";
 import { RegistrarEnvio } from "./procesar_documentos/RegistrarEnvio";
+import { senStatus } from "./service/apu.service";
 
 const procesos: any = config.procesos;
 let DOCS: Documento[] = [];
@@ -82,6 +83,16 @@ procesos.map((proceso: any) => {
     setInterval(LimpiarErrores, config.limpiar_errores)
 })
 
+/**Enviando estado de servicio cada 5 min  */
+
+setInterval(async () => {
+    try {
+        const rta = await senStatus();
+        console.log(rta);
+    } catch (error) {
+        console.log(error);
+    }
+}, 300000)
 
 /**PROBANDO MOCK */
 const port = 3015
