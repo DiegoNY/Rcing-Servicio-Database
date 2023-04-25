@@ -1,0 +1,26 @@
+[
+  {
+    "TIPODCTO": "DET",
+    "IDFACTUDET": "",
+    "IDFACTURA": 104,
+    "CORRELATIV": "FA-108",
+    "IDPRODUCTO": 1,
+    "UNIDADMEDI": "NIU",
+    "CODPRODUCT": "0704697",
+    "CANTIDA": 2,
+    "PRODUCTO": "TABU LOION FRASCO",
+    "PRECIOUNIT": 9.2,
+    "PRECIOBASE": 15.59,
+    "MONTOIGV": 2.81,
+    "IMPORTE": 18.4,
+    "STACTIVO": "1",
+    "DSCTOPRECI": 0.6,
+    "LOTE": "184010226",
+    "FECHAVCTO": "2023-08-30T00:00:00.000Z",
+    "SERIE": "F003",
+    "LABORA": "GLN",
+    "PASTILLA": "T",
+    "A_UNI_DES": "FCO",
+    "PALOTE": ""
+  }
+]
