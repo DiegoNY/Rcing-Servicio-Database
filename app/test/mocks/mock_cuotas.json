@@ -1,0 +1,56 @@
+[
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-99",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 1,
+    "FECH_CUOTA": "2021-10-14T00:00:00.000Z",
+    "MONT_CUOTA": 41,
+    "STATUS": ""
+  },
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-99",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 2,
+    "FECH_CUOTA": "2021-11-14T00:00:00.000Z",
+    "MONT_CUOTA": 100,
+    "STATUS": ""
+  },
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-100",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 1,
+    "FECH_CUOTA": "2021-11-06T00:00:00.000Z",
+    "MONT_CUOTA": 187.2,
+    "STATUS": ""
+  },
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-111",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 1,
+    "FECH_CUOTA": "2021-10-14T00:00:00.000Z",
+    "MONT_CUOTA": 50,
+    "STATUS": ""
+  },
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-111",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 2,
+    "FECH_CUOTA": "2021-11-14T00:00:00.000Z",
+    "MONT_CUOTA": 50,
+    "STATUS": ""
+  },
+  {
+    "SERIE": "F003",
+    "CORRELATIV": "FA-102",
+    "TIPO_DOCTO": "01",
+    "NRO_CUOTA": 1,
+    "FECH_CUOTA": "2021-11-06T00:00:00.000Z",
+    "MONT_CUOTA": 78,
+    "STATUS": ""
+  }
+]

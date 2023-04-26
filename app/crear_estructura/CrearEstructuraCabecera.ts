@@ -1,7 +1,9 @@
 import {
+  GenerarCodigoDocumento,
   GenerarCodigoVenta,
   ValidarPorcentaje,
 } from "../helpers/Documentos.helper";
+import { InformacionAdicionalDocumentos } from "../helpers/InformacionComplementariaDocumento.helper";
 import { Cabecera, Documento } from "../types/serviceDoc";
 
 export const CrearEstructuraCabecera = (
@@ -9,19 +11,29 @@ export const CrearEstructuraCabecera = (
   ruc: string,
   sucursal: number
 ): Documento => {
-  const { correlativo, codigo, serie } = GenerarCodigoVenta(
-    documento.SERIE,
-    documento.CORRELATIV
+  const { correlativo, codigoDocumento, serie } = GenerarCodigoDocumento(
+    documento.CORRELATIV,
+    documento.SERIE
   );
+
+  const {
+    CodMotivo,
+    DocumentoReferencia,
+    FechaReferencia,
+    HoraReferencia,
+    Motivo,
+    TipoReferencia,
+  } = InformacionAdicionalDocumentos(documento);
+
   // console.log(documento);
   const documentoDeclarar: Documento = {
-    CORRELATIV: codigo,
+    CORRELATIV: codigoDocumento,
     cliente: documento.CLIENTE,
     NroDocCliente: documento.DOCUMENTO,
     TipoDocCliente: documento.TIPOIDCLI,
     DirCliente: documento.DIRECCION,
     TipoDoc: documento.TIPODCTO,
-    CodVenta: codigo,
+    CodVenta: codigoDocumento,
     Serie: serie,
     Correlativo: correlativo,
     FechaEmision: new Date(`${documento.FECEMISION}`)
@@ -44,22 +56,12 @@ export const CrearEstructuraCabecera = (
     Porcentaje: ValidarPorcentaje(Number(documento.IGV)),
     NGuia: 0,
     TipoCambio: 0,
-    HoraReferencia: "00:00:00",
-    FechaReferencia:
-      documento.TIPODCTO == "07" || documento.TIPODCTO == "08"
-        ? new Date(`${documento.FECHREFERE}`).toISOString().substring(0, 10)
-        : null,
-    TipoReferencia: null,
-    DocumentoReferencia:
-      documento.DCTOREFERE.length > 0 ? documento.DCTOREFERE : null,
-    CodMotivo:
-      documento.TIPODCTO == "07" || documento.TIPODCTO == "08"
-        ? documento.CODNOTA
-        : null,
-    Motivo:
-      documento.TIPODCTO == "07" || documento.TIPODCTO == "08"
-        ? documento.MOTIVONOTA
-        : null,
+    HoraReferencia: HoraReferencia,
+    FechaReferencia: FechaReferencia,
+    TipoReferencia: TipoReferencia,
+    DocumentoReferencia: DocumentoReferencia,
+    CodMotivo: CodMotivo,
+    Motivo: Motivo,
     otros: "",
     Detraccion: 0,
     PorcDetraccion: 0,

@@ -3,8 +3,9 @@ import { CrearEstructuraCuotas } from "../crear_estructura/CrearEstructuraCuotas
 import { CrearEstructuraItem } from "../crear_estructura/CrearEstructuraItem";
 import { ProcesarArchivoType } from "../types/ProcesarArchivo.type";
 import { Documento } from "../types/serviceDoc";
-import mock_cabecera from "../config/mock_cabecera.json";
-import mock_item from "../config/mock_item.json";
+import mock_cabecera from "../test/mocks/mock_cabecera.json";
+import mock_item from "../test/mocks/mock_item.json";
+import mock_cuotas from "../test/mocks/mock_cuotas.json";
 
 export const ProcesarDocuemntos = (
   data: ProcesarArchivoType,

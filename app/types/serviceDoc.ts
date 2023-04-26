@@ -65,7 +65,7 @@ export type Documento = {
   archivoPath?: string;
   archivo?: string;
   placa: null | string;
-  HoraReferencia: string;
+  HoraReferencia: string | null;
 };
 
 export type RespuestaServicio = {
@@ -120,7 +120,7 @@ export type CreditoCuotas = {
   CORRELATIV: string;
   TIPO_DOCTO: string;
   NRO_CUOTA: number;
-  FECH_CUOTA: Date;
+  FECH_CUOTA: Date | string;
   MONT_CUOTA: number;
   STATUS: string;
 };
