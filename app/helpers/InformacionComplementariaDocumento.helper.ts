@@ -9,7 +9,7 @@ export const InformacionAdicionalDocumentos = (documento: Cabecera) => {
   let Motivo = null;
   let TipoReferencia = null;
 
-  if (documento.TIPODCTO == "01" || documento.TIPODCTO == "02") {
+  if (documento.TIPODCTO == "01" || documento.TIPODCTO == "02" || documento.TIPODCTO == "03") {
   } else {
     const { codigoDocumento, tipoDocumento } = GenerarCodigoDocumento(
       documento.DCTOREFERE,
@@ -17,7 +17,7 @@ export const InformacionAdicionalDocumentos = (documento: Cabecera) => {
     );
     DocumentoReferencia = codigoDocumento;
     HoraReferencia = "00:00:00";
-    FechaReferencia = new Date(`${documento.FECHREFERE}`)
+    FechaReferencia = documento.FECHREFERE == null || documento.FECHREFERE == '' ? null : new Date(`${documento.FECHREFERE}`)
       .toISOString()
       .substring(0, 10);
     TipoReferencia = tipoDocumento;

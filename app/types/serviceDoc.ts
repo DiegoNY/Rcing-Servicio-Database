@@ -9,7 +9,7 @@ export type Item = {
   Total: number;
   Descuento: number;
   Lote: string;
-  FechaVcto: string;
+  FechaVcto: string | null;
   Labora: string;
   Pastilla: null | string;
   Palote: null | string;
@@ -111,7 +111,7 @@ export type Cabecera = {
   FE_FACTNUM: string;
   MOTIVONOTA: string;
   FORMVTA: string;
-  ESTATUS: string;
+  ESTATUS: string | number;
   CODNOTA: string;
 };
 

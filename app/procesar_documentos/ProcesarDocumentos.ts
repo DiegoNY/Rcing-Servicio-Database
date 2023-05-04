@@ -17,6 +17,11 @@ export const ProcesarDocuemntos = (
   const { cabecera, items, cuotas, respuestaSunat } = data;
 
   cabecera.map((documento) => {
+
+    if (documento.ESTATUS == 1 || documento.ESTATUS == "1") {
+      return;
+    }
+
     const documentoEstructurados = CrearEstructuraCabecera(
       documento,
       ruc,
@@ -25,7 +30,7 @@ export const ProcesarDocuemntos = (
     const index = respuestaSunat.findIndex(
       (documentoDeclarado) =>
         documentoDeclarado.DOCUMENTO ==
-          `${documentoEstructurados.CodVenta}-${documentoEstructurados.TipoDoc}` &&
+        `${documentoEstructurados.CodVenta}-${documentoEstructurados.TipoDoc}` &&
         documentoDeclarado.ESTATUS == "1"
     );
 

@@ -19,7 +19,7 @@ export const CrearEstructuraItem = (
         Descuento: item.DSCTOPRECI || 0,
         Total: item.IMPORTE,
         Lote: item.LOTE,
-        FechaVcto: new Date(`${item.FECHAVCTO}`).toISOString().substring(0, 10),
+        FechaVcto: item.FECHAVCTO == null || item.FECHAVCTO == '' ? null : new Date(`${item.FECHAVCTO}`).toISOString().substring(0, 10),
         Labora: item.LABORA,
         Pastilla: item.PASTILLA,
         Palote: item.PALOTE,
