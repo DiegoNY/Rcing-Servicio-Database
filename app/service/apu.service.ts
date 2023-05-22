@@ -28,7 +28,7 @@ class Apu {
 
 const senStatus = () => {
   const rta = axios
-    .post(`${host}/Portal/public/api/servicioActivo`, {
+    .post(`http://cpe.apufact.com/portal/public/api/InsertDocumento`, {
       idSucursal: config.idSucursal,
       // empresa: config.ruc
     })
