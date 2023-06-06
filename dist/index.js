@@ -93,7 +93,7 @@ setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
                 Fecha: `${ValidateTime(new Date().toLocaleDateString().substring(0, 10))} ${new Date().toLocaleTimeString().substring(0, 8)}`,
             },
         ]);
-        console.log(rta);
+        console.log(rta.data);
     }
     catch (error) {
         console.log(error);

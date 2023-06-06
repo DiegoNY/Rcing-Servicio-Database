@@ -121,7 +121,7 @@ setInterval(async () => {
       ]
     );
 
-    console.log(rta);
+    console.log(rta.data);
   } catch (error) {
     console.log(error);
   }
