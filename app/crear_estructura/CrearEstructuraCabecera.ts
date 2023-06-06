@@ -1,6 +1,5 @@
 import {
   GenerarCodigoDocumento,
-  GenerarCodigoVenta,
   ValidarPorcentaje,
 } from "../helpers/Documentos.helper";
 import { InformacionAdicionalDocumentos } from "../helpers/InformacionComplementariaDocumento.helper";
@@ -46,7 +45,12 @@ export const CrearEstructuraCabecera = (
     items: [],
     cuotas: [],
     Moneda: "SOLES",
-    FormaPago: documento.TIPOPAGO,
+    FormaPago:
+      documento.TIPOPAGO == "" ||
+      documento.TIPOPAGO == null ||
+      documento.TIPOPAGO == "\x00\x00\x00\x00\x00\x00\x00"
+        ? "CONTADO"
+        : documento.TIPOPAGO,
     Base: Number(documento.IGV) == 0 ? 0 : documento.SUBTOTAL,
     Igv: documento.IGV,
     MontoExcento: Number(documento.IGV) == 0 ? documento.TOTAL : 0,

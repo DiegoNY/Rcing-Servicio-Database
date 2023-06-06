@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("./server/server");
 const config_1 = require("./config/config");
@@ -15,7 +18,7 @@ const ProcesarArchivo_1 = require("./procesar_documentos/ProcesarArchivo");
 const ProcesarDocumentos_1 = require("./procesar_documentos/ProcesarDocumentos");
 const Declarar_1 = require("./Declarar");
 const RegistrarEnvio_1 = require("./procesar_documentos/RegistrarEnvio");
-const apu_service_1 = require("./service/apu.service");
+const axios_1 = __importDefault(require("axios"));
 const procesos = config_1.config.procesos;
 let DOCS = [];
 const directorio = __dirname;
@@ -47,6 +50,7 @@ procesos.map((proceso) => {
                     data.map((documento) => {
                         const indexDoc = documentosEnviar.findIndex((documentoMock) => `${documentoMock.CodVenta}-${documentoMock.TipoDoc}` ==
                             documento.documento);
+                        /**Puedes cambiar o agregar informacion a la condicion para que se registren los documentos que no deseas que sean enviados al portal  */
                         if (documento.estatus == 1) {
                             documentosEnviados.push({
                                 DOCUMENTO: documento.documento,
@@ -75,26 +79,30 @@ procesos.map((proceso) => {
     setInterval(LimpiarErrores, config_1.config.limpiar_errores);
 });
 /**Enviando estado de servicio cada 5 min  */
+const ValidateTime = (fecha) => {
+    /**Cambiar la posicion de los arrays si es que hay un error al enviar la fecha normalmente  el penultimo es 1 y el ultimo es 0 pero si no colocar el penultimo en 0 y el ultimo en 1 */
+    const date = fecha.split("/");
+    return `${date[2]}-${date[1].padStart(2, "0")}-${date[0].padStart(2, "0")}`;
+};
 setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const rta = yield (0, apu_service_1.senStatus)();
+        const rta = yield axios_1.default.post("http://cpe.apufact.com/portal/public/api/MonitoreoServicioApuFact", [
+            {
+                ruc: config_1.config.ruc,
+                idSucursal: config_1.config.idSucursal,
+                Fecha: `${ValidateTime(new Date().toLocaleDateString().substring(0, 10))} ${new Date().toLocaleTimeString().substring(0, 8)}`,
+            },
+        ]);
         console.log(rta);
     }
     catch (error) {
         console.log(error);
     }
-}), 300000);
+}), config_1.config.tiempo_monitoreo);
 /**PROBANDO MOCK */
-const port = 3015;
-server_1.app.listen(port, () => {
-    server_1.app.get("/docs/:ctr", (req, res) => {
-        const { ctr } = req.params;
-        if (ctr == "ctr") {
-            res.send(DOCS);
-        }
-        else {
-            res.send({ error: "unauthorized" });
-        }
+server_1.app.listen(config_1.config.port, () => {
+    server_1.app.get("/", (req, res) => {
+        res.send(DOCS);
     });
-    console.log(`Server escuchando en http://localhost:${port}`);
+    console.log(`Server escuchando en http://localhost:${config_1.config.port}`);
 });

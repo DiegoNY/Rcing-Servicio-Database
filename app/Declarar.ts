@@ -1,15 +1,16 @@
-import { Apu } from './service/apu.service';
-import { Documento } from './types/serviceDoc';
+import { Apu } from "./service/apu.service";
+import { Documento } from "./types/serviceDoc";
 
 export const Declarar = (data: Documento[]) => {
-    const service = new Apu(data)
-    return new Promise((resolve, reject) => {
-        service.getRta()
-            .then((rta: any) => {
-                resolve(rta);
-            })
-            .catch((error: any) => {
-                reject(error);
-            })
-    })
-}
+  const service = new Apu(data);
+  return new Promise((resolve, reject) => {
+    service
+      .getRta()
+      .then((rta: any) => {
+        resolve(rta);
+      })
+      .catch((error: any) => {
+        reject(error);
+      });
+  });
+};

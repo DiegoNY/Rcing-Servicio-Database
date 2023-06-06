@@ -6,6 +6,7 @@ import { Documento } from "../types/serviceDoc";
 import mock_cabecera from "../test/mocks/mock_cabecera.json";
 import mock_item from "../test/mocks/mock_item.json";
 import mock_cuotas from "../test/mocks/mock_cuotas.json";
+import { config } from "../config/config";
 
 export const ProcesarDocuemntos = (
   data: ProcesarArchivoType,
@@ -17,7 +18,6 @@ export const ProcesarDocuemntos = (
   const { cabecera, items, cuotas, respuestaSunat } = data;
 
   cabecera.map((documento) => {
-
     if (documento.ESTATUS == 1 || documento.ESTATUS == "1") {
       return;
     }
@@ -30,13 +30,15 @@ export const ProcesarDocuemntos = (
     const index = respuestaSunat.findIndex(
       (documentoDeclarado) =>
         documentoDeclarado.DOCUMENTO ==
-        `${documentoEstructurados.CodVenta}-${documentoEstructurados.TipoDoc}` &&
+          `${documentoEstructurados.CodVenta}-${documentoEstructurados.TipoDoc}` &&
         documentoDeclarado.ESTATUS == "1"
     );
 
     // console.log(index);
-    if (index != -1) {
-      return;
+    if (!config.ignorar_documentos.includes(documentoEstructurados.CodVenta)) {
+      if (index != -1) {
+        return;
+      }
     }
     // console.log("paso");
     const itemEstructurados = CrearEstructuraItem(items, documento.CORRELATIV);

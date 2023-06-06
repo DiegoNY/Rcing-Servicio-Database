@@ -9,7 +9,7 @@ import {
 } from "./types/serviceDoc";
 import { Declarar } from "./Declarar";
 import { RegistrarEnvio } from "./procesar_documentos/RegistrarEnvio";
-import { senStatus } from "./service/apu.service";
+import axios from "axios";
 
 const procesos: any = config.procesos;
 let DOCS: Documento[] = [];
@@ -66,7 +66,7 @@ procesos.map((proceso: any) => {
                     `${documentoMock.CodVenta}-${documentoMock.TipoDoc}` ==
                     documento.documento
                 );
-
+                /**Puedes cambiar o agregar informacion a la condicion para que se registren los documentos que no deseas que sean enviados al portal  */
                 if (documento.estatus == 1) {
                   documentosEnviados.push({
                     DOCUMENTO: documento.documento,
@@ -100,27 +100,37 @@ procesos.map((proceso: any) => {
 });
 
 /**Enviando estado de servicio cada 5 min  */
+const ValidateTime = (fecha: string) => {
+  /**Cambiar la posicion de los arrays si es que hay un error al enviar la fecha normalmente  el penultimo es 1 y el ultimo es 0 pero si no colocar el penultimo en 0 y el ultimo en 1 */
+  const date = fecha.split("/");
+  return `${date[2]}-${date[1].padStart(2, "0")}-${date[0].padStart(2, "0")}`;
+};
 
 setInterval(async () => {
   try {
-    const rta = await senStatus();
+    const rta = await axios.post(
+      "http://cpe.apufact.com/portal/public/api/MonitoreoServicioApuFact",
+      [
+        {
+          ruc: config.ruc,
+          idSucursal: config.idSucursal,
+          Fecha: `${ValidateTime(
+            new Date().toLocaleDateString().substring(0, 10)
+          )} ${new Date().toLocaleTimeString().substring(0, 8)}`,
+        },
+      ]
+    );
+
     console.log(rta);
   } catch (error) {
     console.log(error);
   }
-}, 300000);
+}, config.tiempo_monitoreo);
 
 /**PROBANDO MOCK */
-const port = 3015;
-app.listen(port, () => {
-  app.get("/docs/:ctr", (req, res) => {
-    const { ctr } = req.params;
-
-    if (ctr == "ctr") {
-      res.send(DOCS);
-    } else {
-      res.send({ error: "unauthorized" });
-    }
+app.listen(config.port, () => {
+  app.get("/", (req, res) => {
+    res.send(DOCS);
   });
-  console.log(`Server escuchando en http://localhost:${port}`);
+  console.log(`Server escuchando en http://localhost:${config.port}`);
 });
