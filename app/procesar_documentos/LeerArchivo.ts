@@ -16,7 +16,7 @@ export const LeerArchivo = async (ruta: string, directorio?: string) => {
     for await (const dataObtnenida of dataArchivo) {
       data.push(dataObtnenida);
     }
-    console.log(data);
+    // console.log(data);
     return data;
   } catch (error) {
     const send = config?.procesos?.find((proceso) => proceso.rta_s == ruta);

@@ -1,8 +1,12 @@
+import { config } from "../config/config";
 import {
   GenerarCodigoDocumento,
   ValidarPorcentaje,
 } from "../helpers/Documentos.helper";
-import { InformacionAdicionalDocumentos } from "../helpers/InformacionComplementariaDocumento.helper";
+import {
+  InformacionAdicionalDocumentos,
+  ValidarSerie,
+} from "../helpers/InformacionComplementariaDocumento.helper";
 import { Cabecera, Documento } from "../types/serviceDoc";
 
 export const CrearEstructuraCabecera = (
@@ -23,6 +27,14 @@ export const CrearEstructuraCabecera = (
     Motivo,
     TipoReferencia,
   } = InformacionAdicionalDocumentos(documento);
+
+  let _ruc_ = ruc;
+  let _sucursal_ = sucursal;
+  if (config.validar_serie_switch) {
+    const { ruc_v, sucursal_v } = ValidarSerie(serie);
+    _ruc_ = ruc_v;
+    _sucursal_ = sucursal_v;
+  }
 
   // console.log(documento);
   const documentoDeclarar: Documento = {
@@ -73,8 +85,8 @@ export const CrearEstructuraCabecera = (
     RegimenPercepcion: 0,
     TasaPercepcion: 0,
     MontoPercepcion: 0,
-    ruc: ruc,
-    idSucursal: sucursal,
+    ruc: _ruc_,
+    idSucursal: _sucursal_,
     placa: null,
     Estado: 1,
   };
